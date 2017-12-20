@@ -99,6 +99,31 @@ class ProjectMakerCommand(sublime_plugin.WindowCommand):
         self.get_tokens(self.project_path)
         self.get_token_values()
 
+        self.add_folder_to_project(self.project_path)
+
+    def add_folder_to_project(self, dir_name):
+        folder = {
+                'follow_symlinks': True, 
+                'path': dir_name, 
+                'folder_exclude_patterns': ['.*'],
+                # maybe, we need to edit .gitignore, 
+                # so do not exclude files that it's name begin with dot
+                # 'file_exclude_patterns': ['.*'],      
+        }
+        project_data = sublime.active_window().project_data();
+        try:
+            folders = project_data['folders']
+            for f in folders:
+                if f['path'] == dir_name:
+                    return
+            folders.append(folder)
+        except:
+            folders = [folder]
+            if project_data is None:
+                project_data = {}
+            project_data['folders'] = folders
+        sublime.active_window().set_project_data(project_data)        
+        
     def copy_project(self):
         if not os.path.exists(self.project_path):
             shutil.copytree(self.chosen_template_path, self.project_path)
